@@ -1,4 +1,5 @@
-/**
+
+ /**
  * JobController
  *
  * @description :: Server-side logic for managing jobs
@@ -7,33 +8,37 @@
 
 module.exports = {
 
-show: function (){
-var http = require('http');
-var options = {
-  host: 'http://api.indeed.com/ads/apisearch',
-  path: '?publisher=5506945110621672&q=java&l=austin%2C+tx&sort=&radius=&st=&jt=&start=&limit=&fromage=&filter=&latlong=1&co=us&chnl=&userip=1.2.3.4&useragent=Mozilla/%2F4.0%28Firefox%29&format=json&v=2'
-};
-var req = http.get(options, function(res) {
-  console.log('STATUS: ' + res.statusCode);
-  console.log('HEADERS: ' + JSON.stringify(res.headers));
+show: function (req, res){
+var request = require('request');
+var gm = require('googlemaps');
+var util = require('util');
+url = "http://api.indeed.com/ads/apisearch?publisher=5506945110621672&q=&l=london&sort=&radius=&st=&jt=&start=&limit=50&fromage=&filter=&latlong=1&co=uk&chnl=&userip=1.2.3.4&useragent=Mozilla/%2F4.0%28Firefox%29&format=json&v=2";
+request.get(url, function(error, response, body) {
 
-  // Buffer the body entirely for processing as a whole.
-  var bodyChunks = [];
-  res.on('data', function(chunk) {
-    // You can process streamed parts here...
-    bodyChunks.push(chunk);
-  }).on('end', function() {
-    var body = Buffer.concat(bodyChunks);
-    console.log('BODY: ' + body);
-    // ...and/or process the entire body here.
-  })
-});
+ json = JSON.parse(body);
+ indeed = json.results;
+ var gData = [];
 
-req.on('error', function(e) {
-  console.log('ERROR: ' + e.message);
+ indeed.forEach(function(name) {
+
+  location = name.latitude + ',' + name.longitude;
+
+  gm.reverseGeocode(location, function(err, data){
+  indeed.googlemaps = data;
+  // util.puts(gm.staticMap(name.formattedLocation, 15, '500x400', false, false, 'roadmap'));
+  });
+ });
+ console.log(JSON.stringify(indeed.googlemaps));
+ res.view({
+  sj: indeed
+ });
+ 
+
+
 });
 
 }
+
 	
 };
 
